@@ -54,7 +54,6 @@ table {
 body {
     font-family: "Bitcount", system-ui;
     background-color: ${(props) => {
-        console.log('theme: ', props.theme);
         return props.theme.bgColor;
     }};
     color: ${props => props.theme.textColor};
@@ -62,5 +61,6 @@ body {
 
 a {
     text-decoration: none;
+    color: inherit;
 }
 `;
