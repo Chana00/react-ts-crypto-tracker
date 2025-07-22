@@ -26,9 +26,10 @@ export const Coin = styled.li`
   border-radius: 15px;
   margin-bottom: 10px;
   a {
+    display: flex;
+    align-items: center;
     padding: 20px;
     transition: color 0.2s ease-in;
-    display: block;
   }
   &:hover {
     a {
@@ -40,4 +41,10 @@ export const Coin = styled.li`
 export const Loader = styled.span`
   text-align: center;
   display: block;
+`;
+
+export const Img = styled.img`
+  width: 25px;
+  height: 25px;
+  margin-right: 15px;
 `;
