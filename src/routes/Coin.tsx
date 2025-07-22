@@ -1,5 +1,8 @@
+import { useParams } from "react-router";
+
 function Coin() {
-  return <h1>coin</h1>;
+  const { coinId } = useParams();
+  return <h1>coin: { coinId }</h1>;
 }
 
 export default Coin;
