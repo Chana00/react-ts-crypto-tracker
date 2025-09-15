@@ -1,4 +1,4 @@
-import { Outlet, useLocation, useParams } from "react-router";
+import { Link, Outlet, useLocation, useMatch, useParams } from "react-router";
 import {
   Container,
   Header,
@@ -7,6 +7,8 @@ import {
   Overview,
   OverviewItem,
   Description,
+  Tabs,
+  Tab,
 } from "../styles/coins.styles";
 import { useState, useEffect } from "react";
 
@@ -71,6 +73,8 @@ function Coin() {
   const { state } = useLocation();
   const [info, setInfo] = useState<InfoData>();
   const [priceInfo, setPriceInfo] = useState<PriceData>();
+  const priceMatch = useMatch(":coinId/price");
+  const chartMatch = useMatch(":coinId/chart");
 
   useEffect(() => {
     (async () => {
@@ -124,6 +128,16 @@ function Coin() {
               <span>{priceInfo?.max_supply}</span>
             </OverviewItem>
           </Overview>
+
+          <Tabs>
+            <Tab isActive={chartMatch !== null}>
+              <Link to={"/:coinId/chart"}>Chart</Link>
+            </Tab>
+             <Tab isActive={priceMatch !== null}>
+              <Link to={"/:coinId/price"}>Price</Link>
+            </Tab>
+          </Tabs>
+
           {/* 하위 라우트 렌더링 */}
           <Outlet/>
       </>}
