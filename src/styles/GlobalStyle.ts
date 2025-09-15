@@ -52,11 +52,13 @@ table {
 }
 
 body {
+font-weight: 300;
     font-family: "Bitcount", system-ui;
     background-color: ${(props) => {
         return props.theme.bgColor;
     }};
     color: ${props => props.theme.textColor};
+	line-height: 1.2;
 }
 
 a {
