@@ -10,7 +10,8 @@ import {
   Tabs,
   Tab,
 } from "../styles/coins.styles";
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { fetchCoinInfo } from "./api";
 
 interface InfoData {
   id: string;
@@ -68,64 +69,58 @@ interface PriceData {
 }
 
 function Coin() {
-  const [loading, setLoading] = useState(true);
   const { coinId } = useParams();
   const { state } = useLocation();
-  const [info, setInfo] = useState<InfoData>();
-  const [priceInfo, setPriceInfo] = useState<PriceData>();
   const priceMatch = useMatch(":coinId/price");
   const chartMatch = useMatch(":coinId/chart");
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const [infoRes, priceRes] = await Promise.all([
-          fetch(`https://api.coinpaprika.com/v1/coins/${coinId}`),
-          fetch(`https://api.coinpaprika.com/v1/tickers/${coinId}`),
-        ]);
-
-        const infoData = await infoRes.json();
-        const priceData = await priceRes.json();
-
-        setInfo(infoData);
-        setPriceInfo(priceData);
-        setLoading(false);
-      } catch (e) {
-        console.error("API 호출 실패 : ", e);
-      }
-    })();
-  }, [coinId]);
+  const { isLoading: infoLoading, data: infoData } = useQuery<InfoData>({
+    queryKey: ["info", coinId],
+    queryFn: () => fetchCoinInfo(coinId!), // enabled 덕분에 이 시점에서 coinId는 string이라고 확신
+    enabled: !!coinId,
+  });
+  const { isLoading: tickersLoading, data: priceData } = useQuery<PriceData>({
+    queryKey: ["tickers", coinId],
+    queryFn: () => fetchCoinInfo(coinId!),
+    enabled: !!coinId,
+  });
+  const isLoading = infoLoading || tickersLoading;
 
   return (
     <Container>
       <Header>
-        <Title>{state?.name ? state.name : loading ? "Loading..." : info?.name }</Title>
+        <Title>
+          {state?.name ? state.name : isLoading ? "Loading..." : infoData?.name}
+        </Title>
       </Header>
-      {loading ? <Loader>Loading...</Loader> : 
-      <>
-        <Overview>
-          <OverviewItem>
-            <span>Rank:</span>
-            <span>{info?.rank}</span>
-          </OverviewItem>
-          <OverviewItem>
-            <span>Symbol:</span>
-            <span>${info?.symbol}</span>
-          </OverviewItem>
-           <OverviewItem>
-              <span>Open Source:</span>
-              <span>{info?.open_source ? "Yes" : "No"}</span>
+      {isLoading ? (
+        <Loader>Loading...</Loader>
+      ) : (
+        <>
+          <Overview>
+            <OverviewItem>
+              <span>Rank:</span>
+              <span>{infoData?.rank}</span>
             </OverviewItem>
-        </Overview>
-         <Description>{info?.description?.replace(/<[^>]*>?/g, "")}</Description>
-         <Overview>
+            <OverviewItem>
+              <span>Symbol:</span>
+              <span>${infoData?.symbol}</span>
+            </OverviewItem>
+            <OverviewItem>
+              <span>Open Source:</span>
+              <span>{infoData?.open_source ? "Yes" : "No"}</span>
+            </OverviewItem>
+          </Overview>
+          <Description>
+            {infoData?.description?.replace(/<[^>]*>?/g, "")}
+          </Description>
+          <Overview>
             <OverviewItem>
               <span>Total Suply:</span>
-              <span>{priceInfo?.total_supply}</span>
+              <span>{priceData?.total_supply}</span>
             </OverviewItem>
             <OverviewItem>
               <span>Max Supply:</span>
-              <span>{priceInfo?.max_supply}</span>
+              <span>{priceData?.max_supply}</span>
             </OverviewItem>
           </Overview>
 
@@ -133,14 +128,15 @@ function Coin() {
             <Tab isActive={chartMatch !== null}>
               <Link to={"/:coinId/chart"}>Chart</Link>
             </Tab>
-             <Tab isActive={priceMatch !== null}>
+            <Tab isActive={priceMatch !== null}>
               <Link to={"/:coinId/price"}>Price</Link>
             </Tab>
           </Tabs>
 
           {/* 하위 라우트 렌더링 */}
-          <Outlet/>
-      </>}
+          <Outlet />
+        </>
+      )}
     </Container>
   );
 }
