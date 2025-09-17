@@ -9,8 +9,10 @@ import {
   Img,
 } from "../styles/coins.styles";
 import { useEffect, useState } from "react";
+import { fetchCoins } from "./api";
+import { useQuery } from "@tanstack/react-query";
 
-interface CoinInterface {
+interface ICoin {
   id: string;
   name: string;
   symbol: string;
@@ -21,28 +23,23 @@ interface CoinInterface {
 }
 
 function Coins() {
-  const [coins, setCoins] = useState<CoinInterface[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    (async () => {
-      const res = await fetch("https://api.coinpaprika.com/v1/coins");
-      const json = await res.json();
-      setCoins(json.slice(0, 100));
-      setLoading(false);
-    })();
-  }, []);
+  //react-query는 데이터를 캐싱한다
+  const { isLoading, data } = useQuery<ICoin[]>({
+    queryKey: ["allCoins"],
+    queryFn: fetchCoins,
+    select: (data) => data.slice(0, 50),
+  });
 
   return (
     <Container>
       <Header>
         <Title>Coins</Title>
       </Header>
-      {loading ? (
+      {isLoading ? (
         <Loader>"Loading..."</Loader>
       ) : (
         <CoinsList>
-          {coins.map((coin) => (
+          {data?.map((coin) => (
             <Coin key={coin.id}>
               <Link to={`/${coin.id}`} state={{ name: coin.name }}>
                 <Img
