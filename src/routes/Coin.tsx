@@ -78,9 +78,10 @@ function Coin() {
     queryFn: () => fetchCoinInfo(coinId!), // enabled 덕분에 이 시점에서 coinId는 string이라고 확신
     enabled: !!coinId,
   });
-  const { isLoading: tickersLoading, data: priceData } = useQuery<PriceData>({
+  const { isLoading: tickersLoading, data: tickersData } = useQuery<PriceData>({
     queryKey: ["tickers", coinId],
     queryFn: () => fetchCoinInfo(coinId!),
+    refetchInterval: 5000,
     enabled: !!coinId,
   });
   const isLoading = infoLoading || tickersLoading;
@@ -116,25 +117,25 @@ function Coin() {
           <Overview>
             <OverviewItem>
               <span>Total Suply:</span>
-              <span>{priceData?.total_supply}</span>
+              <span>{tickersData?.total_supply}</span>
             </OverviewItem>
             <OverviewItem>
               <span>Max Supply:</span>
-              <span>{priceData?.max_supply}</span>
+              <span>{tickersData?.max_supply}</span>
             </OverviewItem>
           </Overview>
 
           <Tabs>
             <Tab isActive={chartMatch !== null}>
-              <Link to={"/:coinId/chart"}>Chart</Link>
+              <Link to={`/${coinId}/chart`}>Chart</Link>
             </Tab>
             <Tab isActive={priceMatch !== null}>
-              <Link to={"/:coinId/price"}>Price</Link>
+              <Link to={`/${coinId}/price`}>Price</Link>
             </Tab>
           </Tabs>
 
           {/* 하위 라우트 렌더링 */}
-          <Outlet />
+          <Outlet context={{ coinId }} />
         </>
       )}
     </Container>
